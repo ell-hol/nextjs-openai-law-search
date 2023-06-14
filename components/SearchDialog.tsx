@@ -15,6 +15,15 @@ import { SSE } from 'sse.js'
 import type { CreateCompletionResponse } from 'openai'
 import { X, Loader, User, Frown, CornerDownLeft, Search, Wand } from 'lucide-react'
 
+import remarkGfm from 'remark-gfm'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { prism } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+// import 'github-markdown-css/github-markdown.css'
+import ReactMarkdown from 'react-markdown'
+import { CodeProps } from "react-markdown/lib/ast-to-react";
+import CopyBtn from './copy-btn'
+import styles from '../styles/react-markdown.module.css'
+
 function promptDataReducer(
   state: any[],
   action: {
@@ -23,7 +32,7 @@ function promptDataReducer(
     status?: string
     query?: string | undefined
     type?: 'remove-last-item' | string
-  }
+  },
 ) {
   // set a standard state to use later
   let current = [...state]
@@ -68,7 +77,7 @@ export function SearchDialog() {
   const [promptIndex, setPromptIndex] = React.useState(0)
   const [promptData, dispatchPromptData] = React.useReducer(promptDataReducer, [])
 
-  const cantHelp = answer?.trim() === "Sorry, I don't know how to help with that."
+  const cantHelp = answer?.trim() === 'Sorry, I don\'t know how to help with that.'
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -157,7 +166,7 @@ export function SearchDialog() {
 
       setIsLoading(true)
     },
-    [promptIndex, promptData]
+    [promptIndex, promptData],
   )
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -171,87 +180,118 @@ export function SearchDialog() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-base flex gap-2 items-center px-4 py-2 z-50 relative
+        className='text-base flex gap-2 items-center px-4 py-2 z-50 relative
         text-slate-500 dark:text-slate-400  hover:text-slate-700 dark:hover:text-slate-300
         transition-colors
         rounded-md
         border border-slate-200 dark:border-slate-500 hover:border-slate-300 dark:hover:border-slate-500
-        min-w-[300px] "
+        min-w-[300px] '
       >
         <Search width={15} />
-        <span className="border border-l h-5"></span>
-        <span className="inline-block ml-4">Search...</span>
+        <span className='border border-l h-5'></span>
+        <span className='inline-block ml-4'>Search...</span>
         <kbd
-          className="absolute right-3 top-2.5
+          className='absolute right-3 top-2.5
           pointer-events-none inline-flex h-5 select-none items-center gap-1
           rounded border border-slate-100 bg-slate-100 px-1.5
           font-mono text-[10px] font-medium
           text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400
-          opacity-100 "
+          opacity-100 '
         >
-          <span className="text-xs">⌘</span>K
+          <span className='text-xs'>⌘</span>K
         </kbd>{' '}
       </button>
       <Dialog open={open}>
-        <DialogContent className="sm:max-w-[850px] text-black">
+        <DialogContent className='sm:max-w-[850px] text-black'>
           <DialogHeader>
-            <DialogTitle>OpenAI powered doc search</DialogTitle>
+            <DialogTitle>Dextera law search demo</DialogTitle>
             <DialogDescription>
-              Build your own ChatGPT style search with Next.js, OpenAI & Supabase.
+              Ask a legal question and Dextera will try to answer it.
             </DialogDescription>
             <hr />
-            <button className="absolute top-0 right-2 p-2" onClick={() => setOpen(false)}>
-              <X className="h-4 w-4 dark:text-gray-100" />
+            <button className='absolute top-0 right-2 p-2' onClick={() => setOpen(false)}>
+              <X className='h-4 w-4 dark:text-gray-100' />
             </button>
           </DialogHeader>
 
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4 text-slate-700">
+            <div className='grid gap-4 py-4 text-slate-700'>
               {question && (
-                <div className="flex gap-4">
-                  <span className="bg-slate-100 dark:bg-slate-300 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center">
+                <div className='flex gap-4'>
+                  <span
+                    className='bg-slate-100 dark:bg-slate-300 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center'>
                     <User width={18} />{' '}
                   </span>
-                  <p className="mt-0.5 font-semibold text-slate-700 dark:text-slate-100">
+                  <p className='mt-0.5 font-semibold text-slate-700 dark:text-slate-100'>
                     {question}
                   </p>
                 </div>
               )}
 
               {isLoading && (
-                <div className="animate-spin relative flex w-5 h-5 ml-2">
+                <div className='animate-spin relative flex w-5 h-5 ml-2'>
                   <Loader />
                 </div>
               )}
 
               {hasError && (
-                <div className="flex items-center gap-4">
-                  <span className="bg-red-100 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center">
+                <div className='flex items-center gap-4'>
+                  <span className='bg-red-100 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center'>
                     <Frown width={18} />
                   </span>
-                  <span className="text-slate-700 dark:text-slate-100">
+                  <span className='text-slate-700 dark:text-slate-100'>
                     Sad news, the search has failed! Please try again.
                   </span>
                 </div>
               )}
 
               {answer && !hasError ? (
-                <div className="flex items-center gap-4 dark:text-white">
-                  <span className="bg-green-500 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center">
-                    <Wand width={18} className="text-white" />
+                <div className='flex items-center gap-4 dark:text-white'>
+                  <span className='bg-green-500 p-2 w-8 h-8 rounded-full text-center flex items-center justify-center'>
+                    <Wand width={18} className='text-white' />
                   </span>
-                  <h3 className="font-semibold">Answer:</h3>
-                  {answer}
+                  <h3 className='font-semibold'>Answer:</h3>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    className={styles.reactMarkDown}
+                    components={{
+                      pre({ node, ...props }) {
+                        return <pre {...props} />
+                      },
+                      code({ node, inline, className, children, style, ...props }: CodeProps) {
+                        const match = /language-(\w+)/.exec(className || '')
+                        return !inline && match ? (
+                          <CopyBtn codeText={String(children)}>
+                            <SyntaxHighlighter
+                              style={prism}
+                              language={match[1]}
+                              PreTag='div'
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          </CopyBtn>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        )
+                      },
+                    }}
+                  >
+                    {/*{props.doc}*/}
+                    {answer}
+                  </ReactMarkdown>
                 </div>
               ) : null}
 
-              <div className="relative">
+              <div className='relative'>
                 <Input
-                  placeholder="Ask a question..."
-                  name="search"
+                  placeholder='Ask a question...'
+                  name='search'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="col-span-3"
+                  className='col-span-3'
                 />
                 <CornerDownLeft
                   className={`absolute top-3 right-5 h-4 w-4 text-gray-300 transition-opacity ${
@@ -259,25 +299,25 @@ export function SearchDialog() {
                   }`}
                 />
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-100">
+              <div className='text-xs text-gray-500 dark:text-gray-100'>
                 Or try:{' '}
                 <button
-                  type="button"
-                  className="px-1.5 py-0.5
+                  type='button'
+                  className='px-1.5 py-0.5
                   bg-slate-50 dark:bg-gray-500
                   hover:bg-slate-100 dark:hover:bg-gray-600
                   rounded border border-slate-200 dark:border-slate-600
-                  transition-colors"
+                  transition-colors'
                   onClick={(_) =>
-                    setSearch('Create a table called profiles with fields id, name, email')
+                    setSearch('How are funds distributed among health insurance organizations in Germany?')
                   }
                 >
-                  Create a table called profiles with fields id, name, email
+                  How are funds distributed among health insurance organizations in Germany?
                 </button>
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" className="bg-red-500">
+              <Button type='submit' className='bg-red-500'>
                 Ask
               </Button>
             </DialogFooter>

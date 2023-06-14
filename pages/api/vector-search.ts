@@ -115,14 +115,32 @@ export default async function handler(req: NextRequest) {
       contextText += `${content.trim()}\n---\n`
     }
 
+    // const prompt = codeBlock`
+    //   ${oneLine`
+    //     You are a very enthusiastic Supabase representative who loves
+    //     to help people! Given the following sections from the Supabase
+    //     documentation, answer the question using only that information,
+    //     outputted in markdown format. If you are unsure and the answer
+    //     is not explicitly written in the documentation, say
+    //     "Sorry, I don't know how to help with that."
+    //   `}
+    //
+    //   Context sections:
+    //   ${contextText}
+    //
+    //   Question: """
+    //   ${sanitizedQuery}
+    //   """
+    //
+    //   Answer as markdown (including related code snippets if available):
+    // `
+
     const prompt = codeBlock`
       ${oneLine`
-        You are a very enthusiastic Supabase representative who loves
-        to help people! Given the following sections from the Supabase
-        documentation, answer the question using only that information,
-        outputted in markdown format. If you are unsure and the answer
-        is not explicitly written in the documentation, say
-        "Sorry, I don't know how to help with that."
+        Provide a 2-3 sentence answer to the query based on the following sources.
+        Be original, concise, accurate, and helpful. Cite sources as [1](description-words-connected-with-dashes) or [2](description-words-connected-with-dashes) or [3](description-words-connected-with-dashes) after each sentence
+        (not just the very end) to back up your answer (Ex: Correct: [1], Correct: [2][3], Incorrect: [1, 2]).
+        When you're done, DO NOT FORGET to make a markdown table of references of the cited sources and their corresponding numbers.
       `}
 
       Context sections:
@@ -132,8 +150,25 @@ export default async function handler(req: NextRequest) {
       ${sanitizedQuery}
       """
 
-      Answer as markdown (including related code snippets if available):
+      Answer as markdown:
     `
+
+    // const prompt = codeBlock`
+    //   ${oneLine`
+    //     Based on the provided sources give a 5-10 sentence answer to the query based on the following sources. Write everything in Markdown.
+    //     Be original, concise, accurate, and helpful. Cite sources as [1] or [2] or [3] after each sentence (not just the very end) to back up your answer (Ex: Correct: [1], Correct: [2][3], Incorrect: [1, 2]).
+    //     Only cite the sources provided. When you're done, DO NOT FORGET to make a table of references of the cited sources and their corresponding numbers. Make sure to prepend @ twice before writing the references table like so: '@@References:'.
+    //   `}
+    //
+    //   Provided sources:
+    //   ${contextText}
+    //
+    //   Question: """
+    //   ${sanitizedQuery}
+    //   """
+    //
+    //   Answer as markdown (including related code snippets if available):
+    // `
 
     const completionOptions: CreateCompletionRequest = {
       model: 'text-davinci-003',
